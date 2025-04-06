@@ -1,0 +1,1 @@
+export { default as RestaurantKitchenSVG } from './images/restaurant-kitchen';

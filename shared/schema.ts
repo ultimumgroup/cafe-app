@@ -130,6 +130,18 @@ export const invites = pgTable("invites", {
   expiresAt: timestamp("expires_at"),
 });
 
+// Quote interactions table for tracking user engagement with quotes
+export const quoteInteractions = pgTable("quote_interactions", {
+  id: serial("id").primaryKey(),
+  quoteIndex: integer("quote_index").notNull(),
+  quoteText: text("quote_text").notNull(),
+  userId: integer("user_id"),
+  restaurantId: integer("restaurant_id"),
+  interactionCount: integer("interaction_count").notNull().default(1),
+  lastInteractedAt: timestamp("last_interacted_at").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -173,6 +185,12 @@ export const insertInviteSchema = createInsertSchema(invites).omit({
   used: true,
 });
 
+export const insertQuoteInteractionSchema = createInsertSchema(quoteInteractions).omit({
+  id: true,
+  createdAt: true,
+  lastInteractedAt: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -197,3 +215,6 @@ export type Resource = typeof resources.$inferSelect;
 
 export type InsertInvite = z.infer<typeof insertInviteSchema>;
 export type Invite = typeof invites.$inferSelect;
+
+export type InsertQuoteInteraction = z.infer<typeof insertQuoteInteractionSchema>;
+export type QuoteInteraction = typeof quoteInteractions.$inferSelect;

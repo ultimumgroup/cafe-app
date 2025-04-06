@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, File, FileText, Video } from "lucide-react";
+import { Search, Plus, File, FileText, Video, BookOpen, FileBadge, FileArchive } from "lucide-react";
 import { Resource } from "@shared/schema";
 import { useAuth } from "@/contexts/AuthContext";
+import HeroSection from "@/components/layout/HeroSection";
+import StatsCard from "@/components/dashboard/StatsCard";
 
 const Library = () => {
   const { user } = useAuth();
@@ -46,7 +48,9 @@ const Library = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
   
-  const getTimeAgo = (date: Date) => {
+  const getTimeAgo = (date: Date | null) => {
+    if (!date) return 'Unknown';
+    
     const now = new Date();
     const resourceDate = new Date(date);
     const diffInDays = Math.floor((now.getTime() - resourceDate.getTime()) / (1000 * 60 * 60 * 24));
@@ -66,7 +70,40 @@ const Library = () => {
 
   return (
     <div className="space-y-6 pb-20 md:pb-10">
-      <div className="flex items-center justify-between">
+      <div className="mb-8">
+        {/* Hero Section with overlaid cards */}
+        <HeroSection 
+          title="Knowledge Library"
+          image="https://images.unsplash.com/photo-1594122230689-45899d9e6f69?q=80&w=1280"
+        >
+          {/* Overlay Cards */}
+          <div className="flex flex-wrap gap-4 w-full justify-center">
+            <StatsCard 
+              value="18"
+              label="Documents"
+              icon={<FileText className="h-6 w-6" />}
+              iconColor="text-blue-400"
+              bgColor="bg-card/95 backdrop-blur-sm"
+            />
+            <StatsCard 
+              value="5"
+              label="Training Videos"
+              icon={<Video className="h-6 w-6" />}
+              iconColor="text-red-400"
+              bgColor="bg-card/95 backdrop-blur-sm"
+            />
+            <StatsCard 
+              value="7.5GB"
+              label="Storage Used"
+              icon={<FileArchive className="h-6 w-6" />}
+              iconColor="text-purple-400"
+              bgColor="bg-card/95 backdrop-blur-sm"
+            />
+          </div>
+        </HeroSection>
+      </div>
+
+      <div className="flex items-center justify-between mt-16">
         <h2 className="text-xl font-semibold">Resource Library</h2>
         <div className="flex space-x-2">
           <div className="relative">

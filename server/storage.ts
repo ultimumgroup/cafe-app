@@ -7,6 +7,7 @@ import {
   feedback, type Feedback, type InsertFeedback,
   resources, type Resource, type InsertResource,
   invites, type Invite, type InsertInvite,
+  quoteInteractions, type QuoteInteraction, type InsertQuoteInteraction,
   TaskStatus, UserRole
 } from "@shared/schema";
 
@@ -63,6 +64,12 @@ export interface IStorage {
   createResource(resource: InsertResource): Promise<Resource>;
   updateResource(id: number, resource: Partial<InsertResource>): Promise<Resource | undefined>;
   deleteResource(id: number): Promise<boolean>;
+  
+  // Quote interaction operations
+  recordQuoteInteraction(interaction: InsertQuoteInteraction): Promise<QuoteInteraction>;
+  getQuoteInteractions(): Promise<QuoteInteraction[]>;
+  getQuoteInteractionsByRestaurant(restaurantId: number): Promise<QuoteInteraction[]>;
+  getTopQuoteInteractions(limit?: number): Promise<QuoteInteraction[]>;
 }
 
 // In-memory storage implementation
@@ -75,6 +82,7 @@ export class MemStorage implements IStorage {
   private feedbacks: Map<number, Feedback>;
   private resources: Map<number, Resource>;
   private invites: Map<number, Invite>;
+  private quoteInteractions: Map<number, QuoteInteraction>;
   
   private userIdCounter: number;
   private restaurantIdCounter: number;
@@ -84,6 +92,7 @@ export class MemStorage implements IStorage {
   private feedbackIdCounter: number;
   private resourceIdCounter: number;
   private inviteIdCounter: number;
+  private quoteInteractionIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -94,6 +103,7 @@ export class MemStorage implements IStorage {
     this.feedbacks = new Map();
     this.resources = new Map();
     this.invites = new Map();
+    this.quoteInteractions = new Map();
     
     this.userIdCounter = 1;
     this.restaurantIdCounter = 1;
@@ -103,6 +113,7 @@ export class MemStorage implements IStorage {
     this.feedbackIdCounter = 1;
     this.resourceIdCounter = 1;
     this.inviteIdCounter = 1;
+    this.quoteInteractionIdCounter = 1;
     
     // Add a default super admin user
     this.createUser({
@@ -540,6 +551,62 @@ export class MemStorage implements IStorage {
     invite.used = true;
     this.invites.set(invite.id, invite);
     return true;
+  }
+
+  // Quote interaction operations
+  async recordQuoteInteraction(interaction: InsertQuoteInteraction): Promise<QuoteInteraction> {
+    const id = this.quoteInteractionIdCounter++;
+    const now = new Date();
+    
+    // First, check if we have an existing interaction with this quote and user
+    const existingInteraction = Array.from(this.quoteInteractions.values()).find(
+      qi => qi.quoteIndex === interaction.quoteIndex && qi.userId === interaction.userId
+    );
+    
+    if (existingInteraction) {
+      // Update the existing interaction
+      const updatedInteraction: QuoteInteraction = { 
+        ...existingInteraction, 
+        interactionCount: existingInteraction.interactionCount + 1,
+        lastInteractedAt: now
+      };
+      this.quoteInteractions.set(existingInteraction.id, updatedInteraction);
+      return updatedInteraction;
+    } else {
+      // Create a new interaction
+      const newInteraction: QuoteInteraction = { 
+        id, 
+        quoteIndex: interaction.quoteIndex,
+        quoteText: interaction.quoteText,
+        userId: interaction.userId || null,
+        restaurantId: interaction.restaurantId || null,
+        createdAt: now,
+        lastInteractedAt: now,
+        interactionCount: 1
+      };
+      this.quoteInteractions.set(id, newInteraction);
+      return newInteraction;
+    }
+  }
+
+  async getQuoteInteractions(): Promise<QuoteInteraction[]> {
+    return Array.from(this.quoteInteractions.values());
+  }
+
+  async getQuoteInteractionsByRestaurant(restaurantId: number): Promise<QuoteInteraction[]> {
+    return Array.from(this.quoteInteractions.values())
+      .filter(interaction => interaction.restaurantId === restaurantId)
+      .sort((a, b) => {
+        const aTime = a.lastInteractedAt?.getTime() || 0;
+        const bTime = b.lastInteractedAt?.getTime() || 0;
+        return bTime - aTime;
+      });
+  }
+
+  async getTopQuoteInteractions(limit: number = 10): Promise<QuoteInteraction[]> {
+    return Array.from(this.quoteInteractions.values())
+      .sort((a, b) => b.interactionCount - a.interactionCount)
+      .slice(0, limit);
   }
 }
 

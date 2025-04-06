@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertRestaurantSchema, insertTaskSchema, insertResourceSchema, insertFeedbackSchema, insertLogSchema, insertInviteSchema, UserRole } from "@shared/schema";
+import { insertUserSchema, insertRestaurantSchema, insertTaskSchema, insertResourceSchema, insertFeedbackSchema, insertLogSchema, insertInviteSchema, insertQuoteInteractionSchema, UserRole } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
 import { randomBytes } from "crypto";
@@ -677,6 +677,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { password, ...userWithoutPassword } = newUser;
       
       return res.status(201).json({ user: userWithoutPassword });
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+
+  // Quote interaction routes
+  app.post("/api/quote-interactions", async (req, res) => {
+    try {
+      const interactionData = insertQuoteInteractionSchema.parse(req.body);
+      const newInteraction = await storage.recordQuoteInteraction(interactionData);
+      
+      return res.status(201).json(newInteraction);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+  
+  app.get("/api/quote-interactions", async (req, res) => {
+    try {
+      const interactions = await storage.getQuoteInteractions();
+      return res.status(200).json(interactions);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+  
+  app.get("/api/restaurants/:restaurantId/quote-interactions", async (req, res) => {
+    try {
+      const restaurantId = parseInt(req.params.restaurantId);
+      
+      if (isNaN(restaurantId)) {
+        return res.status(400).json({ message: "Invalid restaurant ID" });
+      }
+      
+      const interactions = await storage.getQuoteInteractionsByRestaurant(restaurantId);
+      return res.status(200).json(interactions);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+  
+  app.get("/api/quote-interactions/top", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      
+      if (limit !== undefined && isNaN(limit)) {
+        return res.status(400).json({ message: "Invalid limit parameter" });
+      }
+      
+      const interactions = await storage.getTopQuoteInteractions(limit);
+      return res.status(200).json(interactions);
     } catch (error) {
       return handleError(res, error);
     }

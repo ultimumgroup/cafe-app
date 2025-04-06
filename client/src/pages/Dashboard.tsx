@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import StatCard from "@/components/dashboard/StatCard";
+import StatsCard from "@/components/dashboard/StatsCard";
 import TaskItem from "@/components/dashboard/TaskItem";
 import ActivityItem from "@/components/dashboard/ActivityItem";
 import StaffTable from "@/components/dashboard/StaffTable";
+import HeroSection from "@/components/layout/HeroSection";
 import { Button } from "@/components/ui/button";
 import { 
   Users, 
@@ -12,10 +14,14 @@ import {
   Star,
   Plus,
   Download,
+  DollarSign,
+  UserIcon,
+  TrendingUp,
 } from "lucide-react";
 import { Task, Log, User } from "@shared/schema";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { RestaurantKitchenSVG } from "@/assets";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -65,7 +71,40 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6 pb-20 md:pb-10">
-      <div className="flex items-center justify-between">
+      <div className="mb-8">
+        {/* Hero Section with overlaid cards */}
+        <HeroSection 
+          title="Kitchen Dashboard"
+          image="https://images.unsplash.com/photo-1551218808-94e220e084d2?q=80&w=1280"
+        >
+          {/* Overlay Cards */}
+          <div className="flex flex-wrap gap-4 w-full justify-center">
+            <StatsCard 
+              value="65%"
+              label="Prime Cost"
+              icon={<DollarSign className="h-6 w-6" />}
+              iconColor="text-green-400"
+              bgColor="bg-card/95 backdrop-blur-sm"
+            />
+            <StatsCard 
+              value="24%"
+              label="Labor"
+              icon={<UserIcon className="h-6 w-6" />}
+              iconColor="text-blue-400"
+              bgColor="bg-card/95 backdrop-blur-sm"
+            />
+            <StatsCard 
+              value="12k"
+              label="Sales"
+              icon={<TrendingUp className="h-6 w-6" />}
+              iconColor="text-purple-400"
+              bgColor="bg-card/95 backdrop-blur-sm"
+            />
+          </div>
+        </HeroSection>
+      </div>
+
+      <div className="flex items-center justify-between mt-16">
         <h2 className="text-xl font-semibold">Dashboard</h2>
         <div className="flex space-x-2">
           <Button 
