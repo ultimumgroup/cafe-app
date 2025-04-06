@@ -21,12 +21,14 @@ export function AnimatedToaster() {
               key={id}
               initial={{ opacity: 0, y: 50, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{
                 type: "spring", 
-                stiffness: 350, 
-                damping: 25,
-                duration: 0.3
+                stiffness: 400, 
+                damping: 28,
+                mass: 0.8,
+                velocity: 2,
+                duration: 0.2
               }}
             >
               <Toast {...props}>

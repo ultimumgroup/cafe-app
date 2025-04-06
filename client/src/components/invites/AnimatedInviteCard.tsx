@@ -86,8 +86,22 @@ export function AnimatedInviteCard({ invite, onResend }: AnimatedInviteCardProps
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.2 }}
-      whileHover={{ scale: 1.01 }}
+      transition={{ 
+        duration: 0.2,
+        type: "spring",
+        stiffness: 350,
+        damping: 25,
+        mass: 0.8
+      }}
+      whileHover={{ 
+        scale: 1.02, 
+        y: -5,
+        transition: { 
+          type: "spring", 
+          stiffness: 400, 
+          damping: 15 
+        }
+      }}
       className="h-full"
     >
       <Card className="h-full flex flex-col">
@@ -124,10 +138,15 @@ export function AnimatedInviteCard({ invite, onResend }: AnimatedInviteCardProps
                     {copied ? (
                       <motion.span
                         key="check"
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.8, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
+                        initial={{ scale: 0.7, opacity: 0, x: -5 }}
+                        animate={{ scale: 1, opacity: 1, x: 0 }}
+                        exit={{ scale: 0.9, opacity: 0, x: 5 }}
+                        transition={{ 
+                          duration: 0.15, 
+                          type: "spring", 
+                          stiffness: 450, 
+                          damping: 20
+                        }}
                         className="flex items-center gap-1"
                       >
                         <CheckCircle2 className="h-4 w-4 mr-1" /> Copied
@@ -135,10 +154,15 @@ export function AnimatedInviteCard({ invite, onResend }: AnimatedInviteCardProps
                     ) : (
                       <motion.span
                         key="copy"
-                        initial={{ scale: 0.8, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0.8, opacity: 0 }}
-                        transition={{ duration: 0.15 }}
+                        initial={{ scale: 0.7, opacity: 0, x: 5 }}
+                        animate={{ scale: 1, opacity: 1, x: 0 }}
+                        exit={{ scale: 0.9, opacity: 0, x: -5 }}
+                        transition={{ 
+                          duration: 0.15, 
+                          type: "spring", 
+                          stiffness: 450, 
+                          damping: 20
+                        }}
                         className="flex items-center gap-1"
                       >
                         <Copy className="h-4 w-4 mr-1" /> Copy Link

@@ -87,9 +87,16 @@ export function AnimatedTabs({
               <motion.div
                 className="absolute left-0 right-0 bottom-0 h-0.5 bg-primary"
                 layoutId="underline"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, scaleX: 0.5 }}
+                animate={{ opacity: 1, scaleX: 1 }}
+                transition={{ 
+                  duration: 0.15, 
+                  type: "spring",
+                  stiffness: 450,
+                  damping: 22,
+                  mass: 0.5,
+                  velocity: 2
+                }}
               />
             )}
           </button>
@@ -99,7 +106,14 @@ export function AnimatedTabs({
         <motion.div
           className="absolute z-0"
           layoutId="background"
-          transition={{ type: "spring", bounce: 0.15, duration: 0.4 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 400, 
+            damping: 25, 
+            mass: 0.6,
+            velocity: 2,
+            restDelta: 0.001
+          }}
           style={currentStyle.indicator}
           initial={false}
           animate={{

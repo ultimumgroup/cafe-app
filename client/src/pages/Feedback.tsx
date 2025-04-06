@@ -95,10 +95,16 @@ export default function Feedback() {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
+                initial={{ opacity: 0, y: 15, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -15, scale: 0.97 }}
+                transition={{ 
+                  duration: 0.2,
+                  type: "spring",
+                  stiffness: 350,
+                  damping: 26,
+                  mass: 0.8
+                }}
               >
                 <form onSubmit={handleSubmit}>
                   <Textarea
@@ -108,8 +114,13 @@ export default function Feedback() {
                     onChange={(e) => setFeedback(e.target.value)}
                   />
                   <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 15
+                    }}
                   >
                     <Button 
                       type="submit" 
@@ -127,8 +138,12 @@ export default function Feedback() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            whileHover={{ y: -8, scale: 1.02 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 350, 
+              damping: 15
+            }}
           >
             <Card className="shadow-sm h-full">
               <CardHeader>
@@ -148,8 +163,12 @@ export default function Feedback() {
           </motion.div>
 
           <motion.div
-            whileHover={{ y: -5 }}
-            transition={{ type: "spring", stiffness: 300 }}
+            whileHover={{ y: -8, scale: 1.02 }}
+            transition={{ 
+              type: "spring", 
+              stiffness: 350, 
+              damping: 15
+            }}
           >
             <Card className="shadow-sm h-full">
               <CardHeader>
@@ -159,23 +178,38 @@ export default function Feedback() {
                 <ul className="space-y-2 text-sm">
                   <motion.li 
                     className="pb-2 border-b border-border"
-                    whileHover={{ x: 3 }}
-                    transition={{ type: "spring", stiffness: 400 }}
+                    whileHover={{ x: 5, color: "var(--primary)" }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 500, 
+                      damping: 25,
+                      mass: 0.8
+                    }}
                   >
                     <span className="font-medium">Mobile improvements</span>
                     <p className="text-muted-foreground">Better navigation and layout for small screens</p>
                   </motion.li>
                   <motion.li 
                     className="pb-2 border-b border-border"
-                    whileHover={{ x: 3 }}
-                    transition={{ type: "spring", stiffness: 400 }}
+                    whileHover={{ x: 5, color: "var(--primary)" }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 500, 
+                      damping: 25,
+                      mass: 0.8
+                    }}
                   >
                     <span className="font-medium">Dark mode</span>
                     <p className="text-muted-foreground">Toggle between light and dark themes</p>
                   </motion.li>
                   <motion.li
-                    whileHover={{ x: 3 }}
-                    transition={{ type: "spring", stiffness: 400 }}
+                    whileHover={{ x: 5, color: "var(--primary)" }}
+                    transition={{ 
+                      type: "spring", 
+                      stiffness: 500, 
+                      damping: 25,
+                      mass: 0.8
+                    }}
                   >
                     <span className="font-medium">Task management</span>
                     <p className="text-muted-foreground">New task assignment and tracking features</p>
