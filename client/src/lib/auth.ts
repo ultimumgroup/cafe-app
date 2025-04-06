@@ -20,34 +20,119 @@ interface AuthResponse {
   error: string | null;
 }
 
-// For development/demo purposes, we're using the local API
-// In production, this would be replaced with Supabase auth
+const supabase = createClient();
+
+// Hybrid approach: 
+// 1. Try to use Supabase for auth operations
+// 2. Fall back to local API if Supabase fails or for development
 
 export const login = async ({ email, password }: LoginCredentials): Promise<AuthResponse> => {
   try {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ email, password }),
+    // Try to use Supabase for authentication
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      return { user: null, error: error.message || 'Login failed' };
-    }
+    if (authError) {
+      console.warn('Supabase auth failed, falling back to local API', authError);
+      
+      // Fall back to local API
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
-    return { user: data.user, error: null };
+      if (!response.ok) {
+        const error = await response.json();
+        return { user: null, error: error.message || 'Login failed' };
+      }
+
+      const data = await response.json();
+      return { user: data.user, error: null };
+    }
+    
+    // Supabase auth successful, get user data from profiles table
+    if (authData?.user) {
+      try {
+        const result = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', authData.user.id)
+          .single();
+        
+        // Make sure result is not null before accessing data
+        if (result && result.data) {
+          const profileData = result.data;
+          
+          const user: AuthUser = {
+            id: profileData.id,
+            email: authData.user.email || '',
+            username: profileData.username || authData.user.email?.split('@')[0] || 'User',
+            role: profileData.role || UserRole.STAFF,
+            avatar: profileData.avatar_url,
+            restaurantId: profileData.restaurant_id,
+          };
+          
+          return { user, error: null };
+        }
+      } catch (error) {
+        console.error('Error fetching profile data:', error);
+      }
+    }
+    
+    // If we can't get the profile, create a basic user from auth data
+    if (authData?.user) {
+      const user: AuthUser = {
+        id: parseInt(authData.user.id),
+        email: authData.user.email || '',
+        username: authData.user.email?.split('@')[0] || 'User',
+        role: UserRole.STAFF, // Default role
+        avatar: authData.user.user_metadata?.avatar_url,
+      };
+      
+      return { user, error: null };
+    }
+    
+    return { user: null, error: 'Authentication failed' };
   } catch (error) {
-    return { user: null, error: 'Network error occurred' };
+    console.error('Login error:', error);
+    return { user: null, error: 'Authentication error occurred' };
+  }
+};
+
+export const loginWithGoogle = async (): Promise<{ error: string | null }> => {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/auth/callback',
+      },
+    });
+    
+    if (error) {
+      return { error: error.message };
+    }
+    
+    return { error: null };
+  } catch (error) {
+    console.error('Google login error:', error);
+    return { error: 'Google login failed' };
   }
 };
 
 export const logout = async (): Promise<void> => {
-  // In a real app with Supabase, we would call supabase.auth.signOut()
-  // For now, we'll just clear the user from localStorage
+  try {
+    // Try to use Supabase for logout
+    await supabase.auth.signOut();
+  } catch (error) {
+    console.error('Supabase logout error, clearing local storage', error);
+  }
+  
+  // Always clear local storage as a fallback
   localStorage.removeItem('auth_user');
 };
 
