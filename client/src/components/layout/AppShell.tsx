@@ -2,7 +2,6 @@ import { ReactNode, useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import TopBar from "./TopBar";
 import MobileNav from "./MobileNav";
-import QuoteBanner from "./QuoteBanner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
 
@@ -16,15 +15,11 @@ const AppShell = ({ children }: AppShellProps) => {
   const [location] = useLocation();
   const [showMobileNav, setShowMobileNav] = useState(true);
   
-  // Decide whether to show mobile navigation based on route
-  const [showBanner, setShowBanner] = useState(true);
-  
   useEffect(() => {
     // Only hide on specific routes like login or register
     const routesToHideNav = ['/auth', '/login', '/register'];
     const isAuthRoute = routesToHideNav.includes(location);
     setShowMobileNav(!isAuthRoute);
-    setShowBanner(!isAuthRoute);
   }, [location]);
 
   const toggleMobileMenu = () => {
@@ -38,9 +33,6 @@ const AppShell = ({ children }: AppShellProps) => {
       
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Quote Banner - Only show on appropriate routes */}
-        {showBanner && <QuoteBanner />}
-        
         {/* Top Nav Bar */}
         <TopBar 
           toggleMobileMenu={toggleMobileMenu} 
