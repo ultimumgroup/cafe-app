@@ -1,16 +1,19 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Quote } from "lucide-react";
 
 interface RotatingQuoteProps {
   quotes: string[];
   interval?: number; // in milliseconds
   className?: string;
+  showIcon?: boolean;
 }
 
 export function RotatingQuote({
   quotes,
-  interval = 6000, // default to 6 seconds
+  interval = 8000, // Increased to 8 seconds for better readability
   className = "",
+  showIcon = true,
 }: RotatingQuoteProps) {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
@@ -24,7 +27,7 @@ export function RotatingQuote({
       setTimeout(() => {
         setCurrentQuoteIndex((prevIndex) => (prevIndex + 1) % quotes.length);
         setIsVisible(true);
-      }, 300); // This should match the exit animation duration
+      }, 400); // Slightly longer for a smoother transition
     }, interval);
 
     return () => clearInterval(timer);
@@ -36,20 +39,22 @@ export function RotatingQuote({
         {isVisible && (
           <motion.div
             key={currentQuoteIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: 15, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -15, scale: 0.97 }}
             transition={{
               type: "spring",
-              stiffness: 500,
+              stiffness: 400,
               damping: 30,
-              mass: 0.5,
-              duration: 0.3
+              mass: 0.8,
+              duration: 0.4
             }}
-            className="absolute inset-0 flex items-center"
+            className="absolute inset-0 flex items-center justify-center text-center w-full"
           >
-            <span className="text-sm font-medium text-primary-foreground">
-              {quotes[currentQuoteIndex]}
+            <span className="text-sm font-medium text-primary-foreground flex items-center gap-2">
+              {showIcon && <Quote className="w-3.5 h-3.5" />}
+              <span>{quotes[currentQuoteIndex]}</span>
+              {showIcon && <Quote className="w-3.5 h-3.5 rotate-180" />}
             </span>
           </motion.div>
         )}
