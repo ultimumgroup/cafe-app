@@ -2,7 +2,6 @@ import { Switch, Route, Redirect, useLocation } from "wouter";
 import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
@@ -18,6 +17,9 @@ import AuthCallback from "@/pages/AuthCallback";
 import AppShell from "@/components/layout/AppShell";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import RoleBasedRedirect from "@/components/auth/RoleBasedRedirect";
+import { AnimatePresence } from "framer-motion";
+import { PageTransition } from "@/components/ui/page-transition";
+import { AnimatedToaster } from "@/components/ui/animated-toast";
 
 interface ProtectedRouteProps {
   component: React.ComponentType;
@@ -101,64 +103,113 @@ const PublicRoute = ({ component: Component }: ProtectedRouteProps) => {
 };
 
 function Router() {
+  // Get current location for AnimatePresence
+  const [location] = useLocation();
+
   return (
-    <Switch>
-      {/* Public Routes */}
-      <Route path="/login">
-        <PublicRoute component={Login} />
-      </Route>
+    <AnimatePresence mode="wait" initial={false}>
+      <Switch key={location}>
+        {/* Public Routes */}
+        <Route path="/login">
+          <PublicRoute component={() => (
+            <PageTransition>
+              <Login />
+            </PageTransition>
+          )} />
+        </Route>
 
-      {/* Invite Registration Route */}
-      <Route path="/register/:token">
-        <RegisterWithInvite />
-      </Route>
+        {/* Invite Registration Route */}
+        <Route path="/register/:token">
+          <PageTransition>
+            <RegisterWithInvite />
+          </PageTransition>
+        </Route>
 
-      {/* Auth callback route for OAuth providers like Google */}
-      <Route path="/auth/callback">
-        <AuthCallback />
-      </Route>
-      
-      {/* Role-based Protected Routes */}
-      <Route path="/admin">
-        <ProtectedRoute component={Admin} allowedRoles={['superadmin']} />
-      </Route>
-      
-      <Route path="/dashboard">
-        <ProtectedRoute component={Dashboard} allowedRoles={['owner', 'gm', 'superadmin']} />
-      </Route>
-      
-      <Route path="/tasks">
-        <ProtectedRoute component={Tasks} allowedRoles={['staff', 'owner', 'gm', 'superadmin']} />
-      </Route>
-      
-      <Route path="/playbook">
-        <ProtectedRoute component={Playbook} />
-      </Route>
-      
-      <Route path="/library">
-        <ProtectedRoute component={Library} />
-      </Route>
-      
-      <Route path="/invites">
-        <ProtectedRoute component={Invites} allowedRoles={['owner', 'gm', 'superadmin']} />
-      </Route>
-      
-      <Route path="/settings">
-        <ProtectedRoute component={Settings} />
-      </Route>
-      
-      <Route path="/feedback">
-        <ProtectedRoute component={Feedback} />
-      </Route>
-      
-      {/* Redirect root to role-based destination */}
-      <Route path="/">
-        <RoleBasedRedirect />
-      </Route>
-      
-      {/* Fallback to 404 */}
-      <Route component={NotFound} />
-    </Switch>
+        {/* Auth callback route for OAuth providers like Google */}
+        <Route path="/auth/callback">
+          <PageTransition>
+            <AuthCallback />
+          </PageTransition>
+        </Route>
+        
+        {/* Role-based Protected Routes */}
+        <Route path="/admin">
+          <ProtectedRoute component={() => (
+            <PageTransition>
+              <Admin />
+            </PageTransition>
+          )} allowedRoles={['superadmin']} />
+        </Route>
+        
+        <Route path="/dashboard">
+          <ProtectedRoute component={() => (
+            <PageTransition>
+              <Dashboard />
+            </PageTransition>
+          )} allowedRoles={['owner', 'gm', 'superadmin']} />
+        </Route>
+        
+        <Route path="/tasks">
+          <ProtectedRoute component={() => (
+            <PageTransition>
+              <Tasks />
+            </PageTransition>
+          )} allowedRoles={['staff', 'owner', 'gm', 'superadmin']} />
+        </Route>
+        
+        <Route path="/playbook">
+          <ProtectedRoute component={() => (
+            <PageTransition>
+              <Playbook />
+            </PageTransition>
+          )} />
+        </Route>
+        
+        <Route path="/library">
+          <ProtectedRoute component={() => (
+            <PageTransition>
+              <Library />
+            </PageTransition>
+          )} />
+        </Route>
+        
+        <Route path="/invites">
+          <ProtectedRoute component={() => (
+            <PageTransition>
+              <Invites />
+            </PageTransition>
+          )} allowedRoles={['owner', 'gm', 'superadmin']} />
+        </Route>
+        
+        <Route path="/settings">
+          <ProtectedRoute component={() => (
+            <PageTransition>
+              <Settings />
+            </PageTransition>
+          )} />
+        </Route>
+        
+        <Route path="/feedback">
+          <ProtectedRoute component={() => (
+            <PageTransition>
+              <Feedback />
+            </PageTransition>
+          )} />
+        </Route>
+        
+        {/* Redirect root to role-based destination */}
+        <Route path="/">
+          <RoleBasedRedirect />
+        </Route>
+        
+        {/* Fallback to 404 */}
+        <Route>
+          <PageTransition>
+            <NotFound />
+          </PageTransition>
+        </Route>
+      </Switch>
+    </AnimatePresence>
   );
 }
 
@@ -167,7 +218,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router />
-        <Toaster />
+        <AnimatedToaster />
       </AuthProvider>
     </QueryClientProvider>
   );
