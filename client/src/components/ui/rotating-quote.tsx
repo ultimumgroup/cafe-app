@@ -7,6 +7,7 @@ interface RotatingQuoteProps {
   interval?: number; // in milliseconds
   className?: string;
   showIcon?: boolean;
+  isWhite?: boolean; // To use white text on dark backgrounds
 }
 
 export function RotatingQuote({
@@ -14,6 +15,7 @@ export function RotatingQuote({
   interval = 8000, // Increased to 8 seconds for better readability
   className = "",
   showIcon = true,
+  isWhite = false,
 }: RotatingQuoteProps) {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
@@ -51,10 +53,10 @@ export function RotatingQuote({
             }}
             className="absolute inset-0 flex items-center justify-center text-center w-full"
           >
-            <span className="text-sm font-medium text-primary-foreground flex items-center gap-2">
-              {showIcon && <Quote className="w-3.5 h-3.5" />}
+            <span className={`text-sm font-medium flex items-center gap-2 ${isWhite ? 'text-white italic' : 'text-primary-foreground'}`}>
+              {showIcon && <Quote className={`w-3.5 h-3.5 ${isWhite ? 'text-white/70' : ''}`} />}
               <span>{quotes[currentQuoteIndex]}</span>
-              {showIcon && <Quote className="w-3.5 h-3.5 rotate-180" />}
+              {showIcon && <Quote className={`w-3.5 h-3.5 rotate-180 ${isWhite ? 'text-white/70' : ''}`} />}
             </span>
           </motion.div>
         )}
