@@ -79,32 +79,30 @@ const Dashboard = () => {
           image="https://images.unsplash.com/photo-1551218808-94e220e084d2?q=80&w=1280"
         >
           {/* Overlay Cards */}
-          <div className="flex flex-wrap gap-4 w-full justify-center">
-            <StatsCard 
-              value="65%"
-              label="Prime Cost"
-              icon={<DollarSign className="h-6 w-6" />}
-              iconColor="text-green-400"
-              bgColor="bg-card/90"
-              delay={0.1}
-            />
-            <StatsCard 
-              value="24%"
-              label="Labor"
-              icon={<UserIcon className="h-6 w-6" />}
-              iconColor="text-blue-400"
-              bgColor="bg-card/90"
-              delay={0.2}
-            />
-            <StatsCard 
-              value="12k"
-              label="Sales"
-              icon={<TrendingUp className="h-6 w-6" />}
-              iconColor="text-purple-400"
-              bgColor="bg-card/90"
-              delay={0.3}
-            />
-          </div>
+          <StatsCard 
+            value="65%"
+            label="Prime Cost"
+            icon={<DollarSign className="h-6 w-6" />}
+            iconColor="text-green-400"
+            bgColor="bg-card/90"
+            delay={0.1}
+          />
+          <StatsCard 
+            value="24%"
+            label="Labor"
+            icon={<UserIcon className="h-6 w-6" />}
+            iconColor="text-blue-400"
+            bgColor="bg-card/90"
+            delay={0.2}
+          />
+          <StatsCard 
+            value="12k"
+            label="Sales"
+            icon={<TrendingUp className="h-6 w-6" />}
+            iconColor="text-purple-400"
+            bgColor="bg-card/90"
+            delay={0.3}
+          />
         </HeroSection>
       </div>
 

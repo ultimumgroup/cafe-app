@@ -3,6 +3,7 @@ import { CheckCircle, AlertTriangle, Info, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { type ToastProps } from "@/components/ui/toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type ToastVariant = "default" | "success" | "error" | "info";
 
@@ -34,27 +35,34 @@ function AnimatedToast({
   description, 
   variant = "default" 
 }: AnimatedToastProps) {
+  const isMobile = useIsMobile();
+  
   // Icon based on variant
   const getIcon = () => {
     switch (variant) {
       case "success":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className={isMobile ? "h-4 w-4 text-green-500" : "h-5 w-5 text-green-500"} />;
       case "error":
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
+        return <AlertTriangle className={isMobile ? "h-4 w-4 text-red-500" : "h-5 w-5 text-red-500"} />;
       case "info":
-        return <Info className="h-5 w-5 text-blue-500" />;
+        return <Info className={isMobile ? "h-4 w-4 text-blue-500" : "h-5 w-5 text-blue-500"} />;
       default:
         return null;
     }
   };
+
+  // Use simpler animations on mobile for better performance
+  const transitionSettings = isMobile 
+    ? { type: "tween", duration: 0.2 } 
+    : { type: "spring", damping: 20, stiffness: 300 };
 
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-      transition={{ type: "spring", damping: 20, stiffness: 300 }}
-      className="flex w-full items-start gap-2 p-4"
+      transition={transitionSettings}
+      className={isMobile ? "flex w-full items-start gap-1.5 p-3" : "flex w-full items-start gap-2 p-4"}
     >
       {/* Icon */}
       {getIcon() && (
@@ -75,7 +83,7 @@ function AnimatedToast({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className={cn(
-              "text-sm font-medium",
+              isMobile ? "text-xs font-medium" : "text-sm font-medium",
               variant === "success" && "text-green-800 dark:text-green-300",
               variant === "error" && "text-red-800 dark:text-red-300",
               variant === "info" && "text-blue-800 dark:text-blue-300"
@@ -91,7 +99,7 @@ function AnimatedToast({
             animate={{ opacity: 0.8 }}
             transition={{ delay: 0.2 }}
             className={cn(
-              "text-xs mt-1",
+              isMobile ? "text-[10px] mt-0.5" : "text-xs mt-1",
               variant === "success" && "text-green-700 dark:text-green-400",
               variant === "error" && "text-red-700 dark:text-red-400",
               variant === "info" && "text-blue-700 dark:text-blue-400"
@@ -104,11 +112,11 @@ function AnimatedToast({
       
       {/* Close button */}
       <motion.button 
-        whileHover={{ scale: 1.1 }}
+        whileHover={{ scale: isMobile ? 1.05 : 1.1 }}
         whileTap={{ scale: 0.95 }}
         className="text-foreground/50 hover:text-foreground"
       >
-        <X className="h-4 w-4" />
+        <X className={isMobile ? "h-3 w-3" : "h-4 w-4"} />
       </motion.button>
     </motion.div>
   );
