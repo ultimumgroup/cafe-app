@@ -27,41 +27,77 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const response = supabase.auth.onAuthStateChange(
         async (event: string, session: any) => {
           if (event === 'SIGNED_IN' && session?.user) {
-            // User signed in, fetch profile
+            // User signed in, fetch from our database first
             try {
-              const result = await supabase
-                .from('profiles')
+              // First, check if user exists in our database by authId
+              const userResult = await supabase
+                .from('users')
                 .select('*')
-                .eq('id', session.user.id)
+                .eq('authId', session.user.id)
                 .single();
               
-              // Safely access the data property
-              const profileData = result && result.data ? result.data : null;
+              // Safely access the data property for users query
+              const userData = userResult && userResult.data ? userResult.data : null;
               
-              if (profileData) {
+              // If the user is properly linked in our database
+              if (userData) {
                 const authUser: AuthUser = {
-                  id: profileData.id,
+                  id: userData.id,
                   email: session.user.email || '',
-                  username: profileData.username || session.user.email?.split('@')[0] || 'User',
-                  role: profileData.role || 'staff',
-                  avatar: profileData.avatar_url,
-                  restaurantId: profileData.restaurant_id,
+                  username: userData.username || session.user.email?.split('@')[0] || 'User',
+                  role: userData.role || 'staff',
+                  avatar: session.user.user_metadata?.avatar_url,
+                  restaurantId: userData.restaurantId,
+                  authId: session.user.id,
                 };
                 
                 setUser(authUser);
                 saveUser(authUser);
               } else {
-                // Basic user from auth if profile not found
-                const authUser: AuthUser = {
-                  id: parseInt(session.user.id),
-                  email: session.user.email || '',
-                  username: session.user.email?.split('@')[0] || 'User',
-                  role: 'staff', // Default role
-                  avatar: session.user.user_metadata?.avatar_url,
-                };
+                // Fallback to profile data if available
+                const profileResult = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('id', session.user.id)
+                  .single();
                 
-                setUser(authUser);
-                saveUser(authUser);
+                // Safely access the data property for profiles query
+                const profileData = profileResult && profileResult.data ? profileResult.data : null;
+                
+                if (profileData) {
+                  const authUser: AuthUser = {
+                    id: profileData.id,
+                    email: session.user.email || '',
+                    username: profileData.username || session.user.email?.split('@')[0] || 'User',
+                    role: profileData.role || 'staff',
+                    avatar: profileData.avatar_url,
+                    restaurantId: profileData.restaurant_id,
+                    authId: session.user.id,
+                  };
+                  
+                  setUser(authUser);
+                  saveUser(authUser);
+                } else {
+                  // Basic user from auth if no linked profiles/users found
+                  const authUser: AuthUser = {
+                    id: 0, // Temporary ID, should be replaced when user data is properly created
+                    email: session.user.email || '',
+                    username: session.user.email?.split('@')[0] || 'User',
+                    role: 'staff', // Default role
+                    avatar: session.user.user_metadata?.avatar_url,
+                    authId: session.user.id,
+                  };
+                  
+                  setUser(authUser);
+                  saveUser(authUser);
+                  
+                  // Show a toast to indicate the user record needs to be created
+                  toast({
+                    title: "Account Setup Required",
+                    description: "Your user account needs to be linked to your organization",
+                    variant: "default",
+                  });
+                }
               }
             } catch (error) {
               console.error('Error fetching profile:', error);
@@ -73,6 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 username: session.user.email?.split('@')[0] || 'User',
                 role: 'staff', // Default role
                 avatar: session.user.user_metadata?.avatar_url,
+                authId: session.user.id,
               };
               
               setUser(authUser);
