@@ -116,7 +116,7 @@ export function InteractiveQuote({
               mass: 0.8,
               duration: 0.4
             }}
-            className="flex items-center justify-center text-center w-full"
+            className="flex items-center justify-start text-left w-full"
           >
             <div className="flex items-center gap-2 group">
               {showIcon && <Quote className={`w-3.5 h-3.5 ${isWhite ? 'text-white/70' : ''}`} />}

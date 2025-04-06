@@ -65,19 +65,19 @@ const HeroSection = ({ title, image, subtitle, children }: HeroSectionProps) => 
           {/* Spacer to push quote to bottom */}
           <div className="flex-grow"></div>
           
-          {/* Rotating quote just above the cards */}
+          {/* Interactive quote - left-justified with margin and moved up */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="mb-8"
+            className="mb-16 md:mb-24 ml-[15px] md:ml-[30px]"
           >
             <InteractiveQuote 
               quotes={quotes} 
               interval={6000}
               showIcon={true}
               isWhite={true}
-              className="h-auto"
+              className="h-auto text-left justify-start"
             />
           </motion.div>
         </div>
