@@ -13,10 +13,56 @@ export default function Feedback() {
   const [activeTab, setActiveTab] = useState("feedback");
   const { toast } = useToast();
   
+  // Create the tab content components
+  const getFeedbackTab = () => (
+    <div>
+      <form onSubmit={handleSubmit}>
+        <Textarea
+          placeholder={getPlaceholder()}
+          className="min-h-32 mb-3"
+          value={feedback}
+          onChange={(e) => setFeedback(e.target.value)}
+        />
+        <motion.div
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
+          transition={{
+            type: "spring",
+            stiffness: 500,
+            damping: 15
+          }}
+        >
+          <Button 
+            type="submit" 
+            className="w-full md:w-auto"
+            disabled={submitting}
+          >
+            {getButtonText()}
+          </Button>
+        </motion.div>
+      </form>
+    </div>
+  );
+  
   const tabs = [
-    { id: "feedback", label: "Feedback", icon: <MessageSquare className="h-4 w-4" /> },
-    { id: "suggestions", label: "Suggestions", icon: <Lightbulb className="h-4 w-4" /> },
-    { id: "bugs", label: "Report Bugs", icon: <Bug className="h-4 w-4" /> },
+    { 
+      id: "feedback", 
+      label: "Feedback", 
+      icon: <MessageSquare className="h-4 w-4" />,
+      content: getFeedbackTab()
+    },
+    { 
+      id: "suggestions", 
+      label: "Suggestions", 
+      icon: <Lightbulb className="h-4 w-4" />,
+      content: getFeedbackTab()
+    },
+    { 
+      id: "bugs", 
+      label: "Report Bugs", 
+      icon: <Bug className="h-4 w-4" />,
+      content: getFeedbackTab()
+    },
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,7 +130,6 @@ export default function Feedback() {
               tabs={tabs} 
               defaultTab="feedback" 
               onChange={setActiveTab}
-              variant="underline"
               className="mb-4"
             />
             <CardDescription className="mt-2">
@@ -92,47 +137,7 @@ export default function Feedback() {
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-6">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTab}
-                initial={{ opacity: 0, y: 15, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -15, scale: 0.97 }}
-                transition={{ 
-                  duration: 0.2,
-                  type: "spring",
-                  stiffness: 350,
-                  damping: 26,
-                  mass: 0.8
-                }}
-              >
-                <form onSubmit={handleSubmit}>
-                  <Textarea
-                    placeholder={getPlaceholder()}
-                    className="min-h-32 mb-3"
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
-                  />
-                  <motion.div
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 500,
-                      damping: 15
-                    }}
-                  >
-                    <Button 
-                      type="submit" 
-                      className="w-full md:w-auto"
-                      disabled={submitting}
-                    >
-                      {getButtonText()}
-                    </Button>
-                  </motion.div>
-                </form>
-              </motion.div>
-            </AnimatePresence>
+            {/* The tab content is now handled by the AnimatedTabs component */}
           </CardContent>
         </Card>
 

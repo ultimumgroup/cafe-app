@@ -19,7 +19,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import RoleBasedRedirect from "@/components/auth/RoleBasedRedirect";
 import { AnimatePresence } from "framer-motion";
 import { PageTransition } from "@/components/ui/page-transition";
-import { AnimatedToaster } from "@/components/ui/animated-toast";
+import { Toaster } from "@/components/ui/toaster";
 
 interface ProtectedRouteProps {
   component: React.ComponentType;
@@ -218,7 +218,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router />
-        <AnimatedToaster />
+        <Toaster />
       </AuthProvider>
     </QueryClientProvider>
   );

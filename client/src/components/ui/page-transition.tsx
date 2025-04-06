@@ -6,30 +6,32 @@ interface PageTransitionProps {
   className?: string;
 }
 
-const variants = {
-  hidden: { opacity: 0, y: 20, scale: 0.98 },
-  enter: { opacity: 1, y: 0, scale: 1 },
-  exit: { opacity: 0, y: -20, scale: 0.98 },
-};
-
 export function PageTransition({ children, className = "" }: PageTransitionProps) {
   return (
     <motion.div
-      initial="hidden"
-      animate="enter"
-      exit="exit"
-      variants={variants}
-      transition={{
-        duration: 0.15,
-        type: "spring",
-        stiffness: 400,
-        damping: 22,
-        mass: 0.8,
-        velocity: 2
-      }}
       className={className}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{
+        type: "spring",
+        stiffness: 350,
+        damping: 30,
+        mass: 0.8,
+        duration: 0.3
+      }}
     >
       {children}
     </motion.div>
   );
+}
+
+export function createPageTransition(Component: React.ComponentType<any>) {
+  return function PageWithTransition(props: any) {
+    return (
+      <PageTransition>
+        <Component {...props} />
+      </PageTransition>
+    );
+  };
 }
