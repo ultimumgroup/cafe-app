@@ -18,7 +18,7 @@ import AppShell from "@/components/layout/AppShell";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import RoleBasedRedirect from "@/components/auth/RoleBasedRedirect";
 import { AnimatePresence } from "framer-motion";
-import { PageTransition } from "@/components/ui/page-transition";
+import PageTransition from "@/components/ui/page-transition";
 import { Toaster } from "@/components/ui/toaster";
 
 interface ProtectedRouteProps {

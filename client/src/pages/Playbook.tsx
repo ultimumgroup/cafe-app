@@ -10,6 +10,7 @@ const Playbook = () => {
         {/* Hero Section with overlaid cards */}
         <HeroSection 
           title="Restaurant Playbook"
+          subtitle="Standard operating procedures & training materials"
           image="https://images.unsplash.com/photo-1571805529673-0f56b922b359?q=80&w=1280"
         >
           {/* Overlay Cards */}
@@ -19,21 +20,24 @@ const Playbook = () => {
               label="SOPs Created"
               icon={<BookOpen className="h-6 w-6" />}
               iconColor="text-amber-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.1}
             />
             <StatsCard 
               value="3"
               label="Training Guides"
               icon={<Clipboard className="h-6 w-6" />}
               iconColor="text-blue-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.2}
             />
             <StatsCard 
               value="85%"
               label="Completion Rate"
               icon={<ArrowRight className="h-6 w-6" />}
               iconColor="text-green-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.3}
             />
           </div>
         </HeroSection>

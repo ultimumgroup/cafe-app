@@ -74,6 +74,7 @@ const Library = () => {
         {/* Hero Section with overlaid cards */}
         <HeroSection 
           title="Knowledge Library"
+          subtitle="Training resources & reference documents"
           image="https://images.unsplash.com/photo-1594122230689-45899d9e6f69?q=80&w=1280"
         >
           {/* Overlay Cards */}
@@ -83,21 +84,24 @@ const Library = () => {
               label="Documents"
               icon={<FileText className="h-6 w-6" />}
               iconColor="text-blue-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.1}
             />
             <StatsCard 
               value="5"
               label="Training Videos"
               icon={<Video className="h-6 w-6" />}
               iconColor="text-red-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.2}
             />
             <StatsCard 
               value="7.5GB"
               label="Storage Used"
               icon={<FileArchive className="h-6 w-6" />}
               iconColor="text-purple-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.3}
             />
           </div>
         </HeroSection>

@@ -75,6 +75,7 @@ const Dashboard = () => {
         {/* Hero Section with overlaid cards */}
         <HeroSection 
           title="Kitchen Dashboard"
+          subtitle="Today's performance metrics at a glance"
           image="https://images.unsplash.com/photo-1551218808-94e220e084d2?q=80&w=1280"
         >
           {/* Overlay Cards */}
@@ -84,21 +85,24 @@ const Dashboard = () => {
               label="Prime Cost"
               icon={<DollarSign className="h-6 w-6" />}
               iconColor="text-green-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.1}
             />
             <StatsCard 
               value="24%"
               label="Labor"
               icon={<UserIcon className="h-6 w-6" />}
               iconColor="text-blue-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.2}
             />
             <StatsCard 
               value="12k"
               label="Sales"
               icon={<TrendingUp className="h-6 w-6" />}
               iconColor="text-purple-400"
-              bgColor="bg-card/95 backdrop-blur-sm"
+              bgColor="bg-card/90"
+              delay={0.3}
             />
           </div>
         </HeroSection>
