@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import type { LucideIcon } from "lucide-react";
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -13,12 +14,20 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 
+// Define a type for navigation items
+interface NavigationItem {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  highlight?: boolean;
+}
+
 const MobileNav = () => {
   const [location] = useLocation();
   const { user } = useAuth();
   
   // Staff users see a specialized navigation with Home, Tasks, Feedback
-  const staffNavigation = [
+  const staffNavigation: NavigationItem[] = [
     { name: "Home", href: "/", icon: Home },
     { name: "Tasks", href: "/tasks", icon: ClipboardList },
     { name: "Feedback", href: "/feedback", icon: MessageSquare },
@@ -27,7 +36,7 @@ const MobileNav = () => {
   ];
   
   // Other roles see the standard navigation
-  const standardNavigation = [
+  const standardNavigation: NavigationItem[] = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Playbook", href: "/playbook", icon: BookOpen },
     { name: "Library", href: "/library", icon: Library },
@@ -66,14 +75,14 @@ const MobileNav = () => {
   };
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around z-50 px-1">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex justify-around z-50 px-1 py-1">
       {navigation.map((item) => {
         const isActive = location === item.href;
         
         return (
           <Link key={item.name} href={item.href}>
             <motion.button 
-              className={`flex flex-col items-center py-2 px-1 w-full transition-colors rounded-md ${
+              className={`relative flex flex-col items-center py-2 px-1 w-full transition-colors rounded-md ${
                 isActive 
                   ? 'text-primary' 
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted'
@@ -81,17 +90,30 @@ const MobileNav = () => {
               whileTap={{ scale: 0.95 }}
               whileHover={{ backgroundColor: "rgba(var(--muted), 0.2)" }}
             >
+              {/* Active state indicator with glow */}
+              {isActive && (
+                <motion.div 
+                  className="absolute inset-0 rounded-md border border-primary/30 shadow-sm"
+                  initial={{ opacity: 0 }}
+                  animate={{ 
+                    opacity: 1,
+                    boxShadow: '0 0 8px 1px rgba(var(--primary), 0.2)'
+                  }}
+                  transition={{ duration: 0.2 }}
+                />
+              )}
+              
               <motion.div
                 variants={iconVariants}
                 initial="inactive"
                 animate={isActive ? "active" : "inactive"}
-                className={`${item.highlight ? 'text-primary' : ''}`}
+                className={`${item.highlight ? 'text-primary' : ''} z-10`}
               >
                 <item.icon className="h-5 w-5 mb-1" />
               </motion.div>
               
               <motion.span 
-                className="text-xs font-medium"
+                className="text-xs font-medium z-10"
                 variants={textVariants}
                 initial="inactive"
                 animate={isActive ? "active" : "inactive"}

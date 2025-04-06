@@ -49,19 +49,22 @@ export default function Feedback() {
       id: "feedback", 
       label: "Feedback", 
       icon: <MessageSquare className="h-4 w-4" />,
-      content: getFeedbackTab()
+      content: getFeedbackTab(),
+      color: "#7C3AED" // Purple
     },
     { 
       id: "suggestions", 
       label: "Suggestions", 
       icon: <Lightbulb className="h-4 w-4" />,
-      content: getFeedbackTab()
+      content: getFeedbackTab(),
+      color: "#10B981" // Green
     },
     { 
       id: "bugs", 
       label: "Report Bugs", 
       icon: <Bug className="h-4 w-4" />,
-      content: getFeedbackTab()
+      content: getFeedbackTab(),
+      color: "#EF4444" // Red
     },
   ];
 

@@ -26,7 +26,7 @@ export default function QuoteBanner() {
         quotes={quotes} 
         className="mx-auto" 
         showIcon={true}
-        interval={7000} // 7 seconds for each quote
+        interval={5000} // 5 seconds for each quote
       />
     </div>
   );

@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -140,33 +140,79 @@ const TopBar = ({ toggleMobileMenu, user }: TopBarProps) => {
         {/* Dark Mode Dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button 
-              className="p-2 rounded-md hover:bg-muted focus:outline-none"
+            <motion.button 
+              className="p-2 rounded-md hover:bg-muted focus:outline-none relative group overflow-hidden"
               aria-label="Theme options"
+              whileHover={{ 
+                backgroundColor: "rgba(var(--muted), 0.7)"
+              }}
+              whileTap={{ scale: 0.95 }}
             >
-              <motion.div 
-                initial={false}
-                animate={{ rotate: themeMode === 'dark' ? 0 : 180 }}
-                transition={{ type: "spring", stiffness: 200, damping: 10 }}
-              >
-                {themeMode === 'light' && <Sun className="h-5 w-5" />}
-                {themeMode === 'dark' && <Moon className="h-5 w-5" />}
-                {themeMode === 'system' && <LaptopIcon className="h-5 w-5" />}
-              </motion.div>
-            </button>
+              <AnimatePresence mode="wait">
+                {themeMode === 'light' && (
+                  <motion.div 
+                    key="sun-icon"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <Sun className="h-5 w-5 text-amber-500" />
+                  </motion.div>
+                )}
+                {themeMode === 'dark' && (
+                  <motion.div 
+                    key="moon-icon"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <Moon className="h-5 w-5 text-blue-400" />
+                  </motion.div>
+                )}
+                {themeMode === 'system' && (
+                  <motion.div 
+                    key="system-icon"
+                    initial={{ y: -20, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: 20, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                    className="absolute inset-0 flex items-center justify-center"
+                  >
+                    <LaptopIcon className="h-5 w-5 text-green-400" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              {/* This div is just to maintain button size with absolute positioning */}
+              <div className="h-5 w-5 opacity-0">
+                <Moon className="h-5 w-5" />
+              </div>
+            </motion.button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setTheme('light')} className="cursor-pointer">
-              <Sun className="mr-2 h-4 w-4" />
-              <span>Light</span>
+            <DropdownMenuItem 
+              onClick={() => setTheme('light')} 
+              className={`cursor-pointer flex items-center ${themeMode === 'light' ? 'bg-muted font-medium' : ''}`}
+            >
+              <Sun className="mr-2 h-4 w-4 text-amber-500" />
+              <span>Light ☀️</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme('dark')} className="cursor-pointer">
-              <Moon className="mr-2 h-4 w-4" />
-              <span>Dark</span>
+            <DropdownMenuItem 
+              onClick={() => setTheme('dark')} 
+              className={`cursor-pointer flex items-center ${themeMode === 'dark' ? 'bg-muted font-medium' : ''}`}
+            >
+              <Moon className="mr-2 h-4 w-4 text-blue-400" />
+              <span>Dark 🌘</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme('system')} className="cursor-pointer">
-              <LaptopIcon className="mr-2 h-4 w-4" />
-              <span>System</span>
+            <DropdownMenuItem 
+              onClick={() => setTheme('system')} 
+              className={`cursor-pointer flex items-center ${themeMode === 'system' ? 'bg-muted font-medium' : ''}`}
+            >
+              <LaptopIcon className="mr-2 h-4 w-4 text-green-400" />
+              <span>System 💻</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
