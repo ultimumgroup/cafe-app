@@ -6,6 +6,7 @@ import {
   logs, type Log, type InsertLog,
   feedback, type Feedback, type InsertFeedback,
   resources, type Resource, type InsertResource,
+  invites, type Invite, type InsertInvite,
   TaskStatus, UserRole
 } from "@shared/schema";
 
@@ -14,6 +15,7 @@ export interface IStorage {
   // User operations
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByAuthId(authId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User | undefined>;
   deleteUser(id: number): Promise<boolean>;
@@ -41,6 +43,12 @@ export interface IStorage {
   updateTool(id: number, tool: Partial<InsertTool>): Promise<Tool | undefined>;
   deleteTool(id: number): Promise<boolean>;
   
+  // Invite operations
+  createInvite(invite: InsertInvite): Promise<Invite>;
+  getInviteByToken(token: string): Promise<Invite | undefined>;
+  getInvitesByRestaurant(restaurantId: number): Promise<Invite[]>;
+  markInviteAsUsed(token: string): Promise<boolean>;
+  
   // Log operations
   createLog(log: InsertLog): Promise<Log>;
   getLogsByRestaurant(restaurantId: number, limit?: number): Promise<Log[]>;
@@ -66,6 +74,7 @@ export class MemStorage implements IStorage {
   private logs: Map<number, Log>;
   private feedbacks: Map<number, Feedback>;
   private resources: Map<number, Resource>;
+  private invites: Map<number, Invite>;
   
   private userIdCounter: number;
   private restaurantIdCounter: number;
@@ -74,6 +83,7 @@ export class MemStorage implements IStorage {
   private logIdCounter: number;
   private feedbackIdCounter: number;
   private resourceIdCounter: number;
+  private inviteIdCounter: number;
 
   constructor() {
     this.users = new Map();
@@ -83,6 +93,7 @@ export class MemStorage implements IStorage {
     this.logs = new Map();
     this.feedbacks = new Map();
     this.resources = new Map();
+    this.invites = new Map();
     
     this.userIdCounter = 1;
     this.restaurantIdCounter = 1;
@@ -91,6 +102,7 @@ export class MemStorage implements IStorage {
     this.logIdCounter = 1;
     this.feedbackIdCounter = 1;
     this.resourceIdCounter = 1;
+    this.inviteIdCounter = 1;
     
     // Add a default super admin user
     this.createUser({
@@ -242,11 +254,24 @@ export class MemStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(user => user.email === email);
   }
+  
+  async getUserByAuthId(authId: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.authId === authId);
+  }
 
   async createUser(user: InsertUser): Promise<User> {
     const id = this.userIdCounter++;
     const now = new Date();
-    const newUser: User = { ...user, id, createdAt: now };
+    // Ensure all required fields have values
+    const newUser: User = { 
+      ...user, 
+      id, 
+      createdAt: now,
+      role: user.role || UserRole.STAFF,
+      authId: user.authId || null,
+      avatar: user.avatar || null,
+      restaurantId: user.restaurantId || null
+    };
     this.users.set(id, newUser);
     return newUser;
   }
@@ -280,7 +305,15 @@ export class MemStorage implements IStorage {
   async createRestaurant(restaurant: InsertRestaurant): Promise<Restaurant> {
     const id = this.restaurantIdCounter++;
     const now = new Date();
-    const newRestaurant: Restaurant = { ...restaurant, id, createdAt: now };
+    const newRestaurant: Restaurant = { 
+      ...restaurant, 
+      id, 
+      createdAt: now,
+      email: restaurant.email || null,
+      phone: restaurant.phone || null,
+      address: restaurant.address || null,
+      description: restaurant.description || null
+    };
     this.restaurants.set(id, newRestaurant);
     return newRestaurant;
   }
@@ -314,7 +347,16 @@ export class MemStorage implements IStorage {
   async createTask(task: InsertTask): Promise<Task> {
     const id = this.taskIdCounter++;
     const now = new Date();
-    const newTask: Task = { ...task, id, createdAt: now };
+    const newTask: Task = { 
+      ...task, 
+      id, 
+      createdAt: now,
+      status: task.status || TaskStatus.PENDING,
+      description: task.description || null,
+      assignedTo: task.assignedTo || null,
+      priority: task.priority || "medium",
+      dueDate: task.dueDate || null
+    };
     this.tasks.set(id, newTask);
     return newTask;
   }
@@ -344,7 +386,12 @@ export class MemStorage implements IStorage {
   async createTool(tool: InsertTool): Promise<Tool> {
     const id = this.toolIdCounter++;
     const now = new Date();
-    const newTool: Tool = { ...tool, id, createdAt: now };
+    const newTool: Tool = { 
+      ...tool, 
+      id, 
+      createdAt: now,
+      description: tool.description || null
+    };
     this.tools.set(id, newTool);
     return newTool;
   }
@@ -366,7 +413,14 @@ export class MemStorage implements IStorage {
   async createLog(log: InsertLog): Promise<Log> {
     const id = this.logIdCounter++;
     const now = new Date();
-    const newLog: Log = { ...log, id, createdAt: now };
+    const newLog: Log = { 
+      ...log, 
+      id, 
+      createdAt: now,
+      details: log.details || null,
+      resourceId: log.resourceId || null,
+      resourceType: log.resourceType || null
+    };
     this.logs.set(id, newLog);
     return newLog;
   }
@@ -374,7 +428,11 @@ export class MemStorage implements IStorage {
   async getLogsByRestaurant(restaurantId: number, limit?: number): Promise<Log[]> {
     const logs = Array.from(this.logs.values())
       .filter(log => log.restaurantId === restaurantId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => {
+        const aTime = a.createdAt?.getTime() || 0;
+        const bTime = b.createdAt?.getTime() || 0;
+        return bTime - aTime;
+      });
     
     return limit ? logs.slice(0, limit) : logs;
   }
@@ -383,7 +441,12 @@ export class MemStorage implements IStorage {
   async createFeedback(feedbackData: InsertFeedback): Promise<Feedback> {
     const id = this.feedbackIdCounter++;
     const now = new Date();
-    const newFeedback: Feedback = { ...feedbackData, id, createdAt: now };
+    const newFeedback: Feedback = { 
+      ...feedbackData, 
+      id, 
+      createdAt: now,
+      rating: feedbackData.rating || null
+    };
     this.feedbacks.set(id, newFeedback);
     return newFeedback;
   }
@@ -391,7 +454,11 @@ export class MemStorage implements IStorage {
   async getFeedbackByRestaurant(restaurantId: number): Promise<Feedback[]> {
     return Array.from(this.feedbacks.values())
       .filter(feedback => feedback.restaurantId === restaurantId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => {
+        const aTime = a.createdAt?.getTime() || 0;
+        const bTime = b.createdAt?.getTime() || 0;
+        return bTime - aTime;
+      });
   }
 
   // Resource operations
@@ -406,7 +473,17 @@ export class MemStorage implements IStorage {
   async createResource(resource: InsertResource): Promise<Resource> {
     const id = this.resourceIdCounter++;
     const now = new Date();
-    const newResource: Resource = { ...resource, id, createdAt: now, updatedAt: now };
+    const newResource: Resource = { 
+      ...resource, 
+      id, 
+      createdAt: now, 
+      updatedAt: now,
+      description: resource.description || null,
+      fileUrl: resource.fileUrl || null,
+      fileType: resource.fileType || null,
+      fileSize: resource.fileSize || null,
+      visibleTo: resource.visibleTo || ["all"]
+    };
     this.resources.set(id, newResource);
     return newResource;
   }
@@ -423,6 +500,46 @@ export class MemStorage implements IStorage {
 
   async deleteResource(id: number): Promise<boolean> {
     return this.resources.delete(id);
+  }
+
+  // Invite operations
+  async createInvite(invite: InsertInvite): Promise<Invite> {
+    const id = this.inviteIdCounter++;
+    const now = new Date();
+    const newInvite: Invite = { 
+      ...invite, 
+      id, 
+      createdAt: now, 
+      used: false,
+      email: invite.email || null,
+      role: invite.role || UserRole.STAFF,
+      expiresAt: invite.expiresAt || null
+    };
+    this.invites.set(id, newInvite);
+    return newInvite;
+  }
+
+  async getInviteByToken(token: string): Promise<Invite | undefined> {
+    return Array.from(this.invites.values()).find(invite => invite.token === token);
+  }
+
+  async getInvitesByRestaurant(restaurantId: number): Promise<Invite[]> {
+    return Array.from(this.invites.values())
+      .filter(invite => invite.restaurantId === restaurantId)
+      .sort((a, b) => {
+        const aTime = a.createdAt?.getTime() || 0;
+        const bTime = b.createdAt?.getTime() || 0;
+        return bTime - aTime;
+      });
+  }
+
+  async markInviteAsUsed(token: string): Promise<boolean> {
+    const invite = await this.getInviteByToken(token);
+    if (!invite) return false;
+    
+    invite.used = true;
+    this.invites.set(invite.id, invite);
+    return true;
   }
 }
 

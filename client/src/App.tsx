@@ -9,6 +9,8 @@ import Dashboard from "@/pages/Dashboard";
 import Playbook from "@/pages/Playbook";
 import Library from "@/pages/Library";
 import Settings from "@/pages/Settings";
+import Invites from "@/pages/Invites";
+import RegisterWithInvite from "@/pages/RegisterWithInvite";
 import AuthCallback from "@/pages/AuthCallback";
 import AppShell from "@/components/layout/AppShell";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -75,6 +77,11 @@ function Router() {
         <PublicRoute component={Login} />
       </Route>
 
+      {/* Invite Registration Route */}
+      <Route path="/register/:token">
+        <RegisterWithInvite />
+      </Route>
+
       {/* Auth callback route for OAuth providers like Google */}
       <Route path="/auth/callback">
         <AuthCallback />
@@ -89,6 +96,9 @@ function Router() {
       </Route>
       <Route path="/library">
         <ProtectedRoute component={Library} />
+      </Route>
+      <Route path="/invites">
+        <ProtectedRoute component={Invites} />
       </Route>
       <Route path="/settings">
         <ProtectedRoute component={Settings} />

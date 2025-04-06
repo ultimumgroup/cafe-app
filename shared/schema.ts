@@ -33,6 +33,7 @@ export type TaskStatusType = typeof TaskStatus[keyof typeof TaskStatus];
 // Users table
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
+  authId: text("auth_id").unique(), // Supabase Auth UUID for RLS policies
   email: text("email").notNull().unique(),
   username: text("username").notNull(),
   password: text("password").notNull(),
@@ -116,6 +117,19 @@ export const resources = pgTable("resources", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Invites table for staff invitations
+export const invites = pgTable("invites", {
+  id: serial("id").primaryKey(),
+  token: text("token").notNull().unique(),
+  role: text("role").notNull().default(UserRole.STAFF),
+  restaurantId: integer("restaurant_id").notNull(),
+  createdBy: integer("created_by").notNull(),
+  email: text("email"),
+  used: boolean("used").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at"),
+});
+
 // Insert Schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -153,6 +167,12 @@ export const insertResourceSchema = createInsertSchema(resources).omit({
   updatedAt: true,
 });
 
+export const insertInviteSchema = createInsertSchema(invites).omit({
+  id: true,
+  createdAt: true,
+  used: true,
+});
+
 // Types
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -174,3 +194,6 @@ export type Feedback = typeof feedback.$inferSelect;
 
 export type InsertResource = z.infer<typeof insertResourceSchema>;
 export type Resource = typeof resources.$inferSelect;
+
+export type InsertInvite = z.infer<typeof insertInviteSchema>;
+export type Invite = typeof invites.$inferSelect;

@@ -1,9 +1,10 @@
 import type { Express, Request, Response } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertRestaurantSchema, insertTaskSchema, insertResourceSchema, insertFeedbackSchema, insertLogSchema } from "@shared/schema";
+import { insertUserSchema, insertRestaurantSchema, insertTaskSchema, insertResourceSchema, insertFeedbackSchema, insertLogSchema, insertInviteSchema, UserRole } from "@shared/schema";
 import { z } from "zod";
 import { fromZodError } from "zod-validation-error";
+import { randomBytes } from "crypto";
 
 // Helper function for handling errors
 const handleError = (res: Response, error: unknown) => {
@@ -531,6 +532,151 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
       
       return res.status(201).json(newFeedback);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+
+  // Invite routes
+  app.get("/api/invites/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      
+      if (!token) {
+        return res.status(400).json({ message: "Invalid token" });
+      }
+      
+      const invite = await storage.getInviteByToken(token);
+      
+      if (!invite) {
+        return res.status(404).json({ message: "Invite not found" });
+      }
+      
+      if (invite.used) {
+        return res.status(410).json({ message: "This invite has already been used" });
+      }
+      
+      if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+        return res.status(410).json({ message: "This invite has expired" });
+      }
+      
+      return res.status(200).json(invite);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+  
+  app.get("/api/restaurants/:restaurantId/invites", async (req, res) => {
+    try {
+      const restaurantId = parseInt(req.params.restaurantId);
+      
+      if (isNaN(restaurantId)) {
+        return res.status(400).json({ message: "Invalid restaurant ID" });
+      }
+      
+      const invites = await storage.getInvitesByRestaurant(restaurantId);
+      
+      return res.status(200).json(invites);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+  
+  app.post("/api/invites", async (req, res) => {
+    try {
+      // Generate a secure random token
+      const tokenBytes = randomBytes(16);
+      const token = tokenBytes.toString('hex');
+      
+      // Validate that the request has the required fields
+      const inviteData = insertInviteSchema.parse({
+        ...req.body,
+        token
+      });
+      
+      // Validate the role (only owners and GMs can create invites for GMs and staff)
+      const { role } = inviteData;
+      
+      if (role !== UserRole.GENERAL_MANAGER && role !== UserRole.STAFF) {
+        return res.status(400).json({ 
+          message: "Invalid role. Invites can only be created for General Manager or Staff roles" 
+        });
+      }
+      
+      // Create the invite
+      const newInvite = await storage.createInvite(inviteData);
+      
+      // Create a log entry for the invite creation
+      await storage.createLog({
+        type: "invite_created",
+        userId: inviteData.createdBy,
+        details: { 
+          inviteRole: inviteData.role,
+          inviteEmail: inviteData.email || "not specified"
+        },
+        restaurantId: inviteData.restaurantId
+      });
+      
+      return res.status(201).json(newInvite);
+    } catch (error) {
+      return handleError(res, error);
+    }
+  });
+  
+  app.post("/api/register-with-invite", async (req, res) => {
+    try {
+      const { token, user } = req.body;
+      
+      if (!token || !user) {
+        return res.status(400).json({ message: "Token and user data are required" });
+      }
+      
+      // Validate the token
+      const invite = await storage.getInviteByToken(token);
+      
+      if (!invite) {
+        return res.status(404).json({ message: "Invalid invite token" });
+      }
+      
+      if (invite.used) {
+        return res.status(410).json({ message: "This invite has already been used" });
+      }
+      
+      if (invite.expiresAt && new Date(invite.expiresAt) < new Date()) {
+        return res.status(410).json({ message: "This invite has expired" });
+      }
+      
+      // Validate user data
+      const userData = insertUserSchema.parse({
+        ...user,
+        role: invite.role,
+        restaurantId: invite.restaurantId
+      });
+      
+      // Check if email is already registered
+      const existingUser = await storage.getUserByEmail(userData.email);
+      if (existingUser) {
+        return res.status(409).json({ message: "Email is already registered" });
+      }
+      
+      // Create the user
+      const newUser = await storage.createUser(userData);
+      
+      // Mark the invite as used
+      await storage.markInviteAsUsed(token);
+      
+      // Create a log entry for user registration
+      await storage.createLog({
+        type: "user_registered",
+        userId: newUser.id,
+        details: { role: newUser.role },
+        restaurantId: invite.restaurantId
+      });
+      
+      // Return user data without password
+      const { password, ...userWithoutPassword } = newUser;
+      
+      return res.status(201).json({ user: userWithoutPassword });
     } catch (error) {
       return handleError(res, error);
     }

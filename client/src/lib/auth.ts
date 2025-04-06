@@ -8,6 +8,7 @@ export interface AuthUser {
   role: string;
   avatar?: string;
   restaurantId?: number;
+  authId?: string; // Supabase Auth UUID
 }
 
 interface LoginCredentials {
@@ -75,6 +76,8 @@ export const login = async ({ email, password }: LoginCredentials): Promise<Auth
             role: profileData.role || UserRole.STAFF,
             avatar: profileData.avatar_url,
             restaurantId: profileData.restaurant_id,
+            // Store the Supabase auth ID to map with our database auth_id
+            authId: authData.user.id,
           };
           
           return { user, error: null };
@@ -92,6 +95,7 @@ export const login = async ({ email, password }: LoginCredentials): Promise<Auth
         username: authData.user.email?.split('@')[0] || 'User',
         role: UserRole.STAFF, // Default role
         avatar: authData.user.user_metadata?.avatar_url,
+        authId: authData.user.id,
       };
       
       return { user, error: null };
