@@ -12,6 +12,7 @@ import Settings from "@/pages/Settings";
 import Invites from "@/pages/Invites";
 import Tasks from "@/pages/Tasks";
 import Admin from "@/pages/Admin";
+import Feedback from "@/pages/Feedback";
 import RegisterWithInvite from "@/pages/RegisterWithInvite";
 import AuthCallback from "@/pages/AuthCallback";
 import AppShell from "@/components/layout/AppShell";
@@ -144,6 +145,10 @@ function Router() {
       
       <Route path="/settings">
         <ProtectedRoute component={Settings} />
+      </Route>
+      
+      <Route path="/feedback">
+        <ProtectedRoute component={Feedback} />
       </Route>
       
       {/* Redirect root to role-based destination */}
